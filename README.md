@@ -25,7 +25,7 @@ giFTP use a JSON file called <code>gtp.json</code> to store information about yo
 
 To create config file is easy, just run:
 
-    $ gtp init
+    $ gtp --init
     > Config file has been generated...
     > Now edit "gtp.json" and fill with your FTP and GIT information.
     
@@ -57,13 +57,23 @@ The config itself is self explanatory,
     Host:
      - path : Remote path on the server that file will be transferred.
 
-After config has been set, now you can make any changes to the repo and make a commit.
+After config has been set, lets check if your FTP informations are correct.
 
-**1. Apply changes to remote server :**
+**2. Test connection :**
+
+After config has been set, its time to test it.
+
+    $ gtp --test
+    > [INFO] Connecting...
+    > [INFO] Connection success.
+    
+If it success, now you can make any changes to the repo and make a commit.
+
+**3. Apply changes to remote server :**
 
 When you are ready to deploy changes, just run this command in the same directory your config file are located:
 
-    $ gtp update
+    $ gtp --update
     > [INFO] Checking repository...
     > [INFO] Found 2 new commit...
     
