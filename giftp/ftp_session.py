@@ -66,7 +66,6 @@ class FTPSession(object):
     """
     A class that handle all FTP operation.
     """
-    
     def __init__(self, host, username=None, password=None, path=None):
         """
         Get FTP credentials during initialization.
@@ -82,7 +81,6 @@ class FTPSession(object):
         self.session = None
         self.success_operation = []
         self.failed_operation = []
-
 
     def start(self):
         """
@@ -103,13 +101,11 @@ class FTPSession(object):
                 raise RemotePathNotExistException(
                     '> [ERROR] Path "%s" does not exists on the server\n' % self.path)
 
-
     def stop(self):
         """
         Stop connection.
         """
         self.session.quit()
-
 
     def mkdir(self, segments):
         """
@@ -127,7 +123,6 @@ class FTPSession(object):
                 pass
         return
 
-
     def push(self, path, stream, is_new=True):
         """
         Add new file to remote server.
@@ -135,11 +130,13 @@ class FTPSession(object):
         segments = path.split('/')
 
         operation = 'A'
-        if not is_new: operation = 'M'
+        if not is_new:
+            operation = 'M'
 
         # Check if the file is located inside directory structure.
         # If yes, create the dirs if not exists.
-        if len(segments) > 1: self.mkdir(segments[:-1])
+        if len(segments) > 1:
+            self.mkdir(segments[:-1])
 
         try:
             # Let's just always transfer the file as binary.
@@ -150,7 +147,6 @@ class FTPSession(object):
             self.failed_operation.append(OperationStatus(operation, path, e))
         else:
             self.success_operation.append(OperationStatus(operation, path))
-
 
     def delete(self, path):
         """

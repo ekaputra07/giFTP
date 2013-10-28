@@ -25,7 +25,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import sys, os
+import os
+import sysos
 import ftplib
 import argparse
 import json
@@ -33,7 +34,8 @@ import json
 from git import Repo
 from git.exc import NoSuchPathError, InvalidGitRepositoryError
 
-from ftp_session import FTPSession, ConnectionErrorException, RemotePathNotExistException
+from ftp_session import (FTPSession, ConnectionErrorException,
+                         RemotePathNotExistException)
 
 CONFIG_FILE = 'gtp.json'
 
@@ -134,7 +136,6 @@ def inspect_repo(repo_config, ftp_creds):
         print '> [ERROR] Repo does not exist or invalid. %s\n' % e.message
         sys.exit(1)
 
-
     print '> [INFO] Checking repository...'
     # Count how many commit after the last commit
     commit_num = 0
@@ -150,7 +151,7 @@ def inspect_repo(repo_config, ftp_creds):
     print '> [INFO] Found %s new commit...' % (commit_num-1)
 
     # Exit if no new commit available
-    if commit_num-1 == 0: 
+    if commit_num-1 == 0:
         print '> [INFO] Nothing to update. Exit.\n'
         sys.exit(0)
 
@@ -182,7 +183,6 @@ def inspect_repo(repo_config, ftp_creds):
             sess.stop()
 
 
-
 def update_changes(sess, diffs, commit):
     """
     Update associated file on the remote server based on the diffs infomation.
@@ -209,9 +209,12 @@ def runner():
     giFTP runner function.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--init', action='store_true', help='Generate initial Giftp config on current directory.')
-    parser.add_argument('-u', '--update', action='store_true', help='Update changes to remote server.')
-    parser.add_argument('-t', '--test', action='store_true', help='Test connection to remote server.')
+    parser.add_argument('-i', '--init', action='store_true',
+                        help='Generate initial Giftp config on current directory.')
+    parser.add_argument('-u', '--update', action='store_true',
+                        help='Update changes to remote server.')
+    parser.add_argument('-t', '--test', action='store_true',
+                        help='Test connection to remote server.')
     args = parser.parse_args()
 
     print
@@ -222,7 +225,6 @@ def runner():
     elif args.test:
         run_update(test=True)
     print
-
 
 
 if __name__ == '__main__':
