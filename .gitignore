@@ -1,4 +1,5 @@
 *.py[cod]
+gtp.json
 
 # C extensions
 *.so

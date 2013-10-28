@@ -1,7 +1,3 @@
-from base import build_arguments
+from base import runner
 
 __VERSION__ = '0.1.0'
-
-
-if __name__ == '__main__':
-	build_arguments()

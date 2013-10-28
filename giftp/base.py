@@ -23,6 +23,8 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from setuptools import setup, find_packages
 """
 
 import sys, os
@@ -74,7 +76,7 @@ def generate_initial_config():
 		fp.close()
 
 
-def run_update():
+def run_update(test=False):
 	"""
 	Run update to remote server.
 	"""
@@ -98,7 +100,27 @@ def run_update():
 		print '> [ERROR] "%s" has invalid JSON format.\n' % CONFIG_FILE
 	else:
 		fp.close()
-		inspect_repo(config.get('repo'), config.get('host'))
+		if not test:
+			inspect_repo(config.get('repo'), config.get('host'))
+		else:
+			test_connection(config.get('host'))
+
+
+def test_connection(ftp_creds):
+	"""
+	Test a FTP connection based on supplied credentials.
+	"""
+	print '> [INFO] Connecting...'
+	try:
+		sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
+						  ftp_creds.get('password'), path=ftp_creds.get('path'))
+		sess.start()
+	except (ConnectionErrorException, RemotePathNotExistException) as e:
+		print e
+	else:
+		print '> [INFO] Connection success.\n'
+		sess.stop()
+		sys.exit(0)
 
 
 def inspect_repo(repo_config, ftp_creds):
@@ -112,7 +134,7 @@ def inspect_repo(repo_config, ftp_creds):
 		repo = Repo(repo_config.get('path'))
 	except (NoSuchPathError, InvalidGitRepositoryError) as e:
 		print '> [ERROR] Repo does not exist or invalid. %s\n' % e.message
-		sys.exit()
+		sys.exit(1)
 
 
 	print '> [INFO] Checking repository...'
@@ -184,14 +206,26 @@ def update_changes(sess, diffs, commit):
 		sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream, is_new=False)
 
 
-def build_arguments():
+def runner():
+	"""
+	giFTP runner function.
+	"""
 	parser = argparse.ArgumentParser()
-	parser.add_argument('action', help='init: Generate initial Giftp config on current directory. update: Update changes to remote server.')
+	parser.add_argument('-i', '--init', action='store_true', help='Generate initial Giftp config on current directory.')
+	parser.add_argument('-u', '--update', action='store_true', help='Update changes to remote server.')
+	parser.add_argument('-t', '--test', action='store_true', help='Test connection to remote server.')
 	args = parser.parse_args()
 
-	if args.action == 'init':
-		print
+	print
+	if args.init:
 		generate_initial_config()
-	elif args.action == 'update':
-		print
+	elif args.update:
 		run_update()
+	elif args.test:
+		run_update(test=True)
+	print
+
+
+
+if __name__ == '__main__':
+	runner()
