@@ -39,191 +39,191 @@ CONFIG_FILE = 'gtp.json'
 
 
 def generate_initial_config():
-	"""
-	Generate config template.
-	"""
-	config = {
-		'host': {
-			'url': 'example.com',
-			'username': '',
-			'password': '',
-			'path': '',
-		},
-		'repo': {
-			'path': '/absolute/path/to-your/git-repo',
-			'branch': 'master',
-			'head': '',
-		},
-	}
+    """
+    Generate config template.
+    """
+    config = {
+        'host': {
+            'url': 'example.com',
+            'username': '',
+            'password': '',
+            'path': '',
+        },
+        'repo': {
+            'path': '/absolute/path/to-your/git-repo',
+            'branch': 'master',
+            'head': '',
+        },
+    }
 
-	# Check if config file already exist.
-	if os.path.isfile(CONFIG_FILE):
-		print '> [WARNING] Config file already exist.\n'
-		sys.exit(0)
+    # Check if config file already exist.
+    if os.path.isfile(CONFIG_FILE):
+        print '> [WARNING] Config file already exist.\n'
+        sys.exit(0)
 
-	try:
-		fp = open(CONFIG_FILE, 'w')
-		json.dump(config, fp, indent=4)
-	except:
-		print '> [ERROR] Please make sure you have a write permission to this directory.'
-		sys.exit(0)
-	else:
-		print '> Config file has been generated...'
-		print '> Now edit "%s" and fill with your FTP and GIT information.\n' % CONFIG_FILE
-	finally:
-		fp.close()
+    try:
+        fp = open(CONFIG_FILE, 'w')
+        json.dump(config, fp, indent=4)
+    except:
+        print '> [ERROR] Please make sure you have a write permission to this directory.'
+        sys.exit(0)
+    else:
+        print '> Config file has been generated...'
+        print '> Now edit "%s" and fill with your FTP and GIT information.\n' % CONFIG_FILE
+    finally:
+        fp.close()
 
 
 def run_update(test=False):
-	"""
-	Run update to remote server.
-	"""
-	# Check if config file exist.
-	if not os.path.isfile(CONFIG_FILE):
-		print '> [WARNING] Config file doesn\'t exist.'
-		print '> Generate one with command "gtp init"\n'
-		sys.exit(0)
+    """
+    Run update to remote server.
+    """
+    # Check if config file exist.
+    if not os.path.isfile(CONFIG_FILE):
+        print '> [WARNING] Config file doesn\'t exist.'
+        print '> Generate one with command "gtp init"\n'
+        sys.exit(0)
 
-	# open the config file
-	try:
-		fp = open(CONFIG_FILE, 'r')
-	except:
-		print '> [ERROR] Please make sure you have a read access to "%s".' % CONFIG_FILE
-		sys.exit(0)
+    # open the config file
+    try:
+        fp = open(CONFIG_FILE, 'r')
+    except:
+        print '> [ERROR] Please make sure you have a read access to "%s".' % CONFIG_FILE
+        sys.exit(0)
 
-	# read config file
-	try:
-		config = json.load(fp)
-	except:
-		print '> [ERROR] "%s" has invalid JSON format.\n' % CONFIG_FILE
-	else:
-		fp.close()
-		if not test:
-			inspect_repo(config.get('repo'), config.get('host'))
-		else:
-			test_connection(config.get('host'))
+    # read config file
+    try:
+        config = json.load(fp)
+    except:
+        print '> [ERROR] "%s" has invalid JSON format.\n' % CONFIG_FILE
+    else:
+        fp.close()
+        if not test:
+            inspect_repo(config.get('repo'), config.get('host'))
+        else:
+            test_connection(config.get('host'))
 
 
 def test_connection(ftp_creds):
-	"""
-	Test a FTP connection based on supplied credentials.
-	"""
-	print '> [INFO] Connecting...'
-	try:
-		sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
-						  ftp_creds.get('password'), path=ftp_creds.get('path'))
-		sess.start()
-	except (ConnectionErrorException, RemotePathNotExistException) as e:
-		print e
-	else:
-		print '> [INFO] Connection success.\n'
-		sess.stop()
-		sys.exit(0)
+    """
+    Test a FTP connection based on supplied credentials.
+    """
+    print '> [INFO] Connecting...'
+    try:
+        sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
+                          ftp_creds.get('password'), path=ftp_creds.get('path'))
+        sess.start()
+    except (ConnectionErrorException, RemotePathNotExistException) as e:
+        print e
+    else:
+        print '> [INFO] Connection success.\n'
+        sess.stop()
+        sys.exit(0)
 
 
 def inspect_repo(repo_config, ftp_creds):
-	"""
-	Inspect target Git repository.
-	"""
-	branch = repo_config.get('branch')
-	last_commit = repo_config.get('head')
+    """
+    Inspect target Git repository.
+    """
+    branch = repo_config.get('branch')
+    last_commit = repo_config.get('head')
 
-	try:
-		repo = Repo(repo_config.get('path'))
-	except (NoSuchPathError, InvalidGitRepositoryError) as e:
-		print '> [ERROR] Repo does not exist or invalid. %s\n' % e.message
-		sys.exit(1)
+    try:
+        repo = Repo(repo_config.get('path'))
+    except (NoSuchPathError, InvalidGitRepositoryError) as e:
+        print '> [ERROR] Repo does not exist or invalid. %s\n' % e.message
+        sys.exit(1)
 
 
-	print '> [INFO] Checking repository...'
-	# Count how many commit after the last commit
-	commit_num = 0
-	for commit in repo.iter_commits(branch, max_count=50):
-		commit_num += 1
-		if commit.hexsha == last_commit:
-			break
+    print '> [INFO] Checking repository...'
+    # Count how many commit after the last commit
+    commit_num = 0
+    for commit in repo.iter_commits(branch, max_count=50):
+        commit_num += 1
+        if commit.hexsha == last_commit:
+            break
 
-	# Loop on each commit and detect changes from previous commit.
-	# Gather changed file data and update remote file.
-	counter = commit_num
+    # Loop on each commit and detect changes from previous commit.
+    # Gather changed file data and update remote file.
+    counter = commit_num
 
-	print '> [INFO] Found %s new commit...' % (commit_num-1)
+    print '> [INFO] Found %s new commit...' % (commit_num-1)
 
-	# Exit if no new commit available
-	if commit_num-1 == 0: 
-		print '> [INFO] Nothing to update. Exit.\n'
-		sys.exit(0)
+    # Exit if no new commit available
+    if commit_num-1 == 0: 
+        print '> [INFO] Nothing to update. Exit.\n'
+        sys.exit(0)
 
-	for i in range(commit_num):
-		counter -= 1
+    for i in range(commit_num):
+        counter -= 1
 
-		if counter - 1 < 0:
-			break
+        if counter - 1 < 0:
+            break
 
-		tip_branch = '%s~%s' % (branch, counter)
-		tip_next_branch = '%s~%s' % (branch, counter-1)
+        tip_branch = '%s~%s' % (branch, counter)
+        tip_next_branch = '%s~%s' % (branch, counter-1)
 
-		tip = repo.commit(tip_branch)
-		tip_next = repo.commit(tip_next_branch)
+        tip = repo.commit(tip_branch)
+        tip_next = repo.commit(tip_next_branch)
 
-		# print '(%s) %s --> (%s) %s' % (tip_branch, tip, tip_next_branch, tip_next)
+        # print '(%s) %s --> (%s) %s' % (tip_branch, tip, tip_next_branch, tip_next)
 
-		diffs = tip.diff(tip_next)
+        diffs = tip.diff(tip_next)
 
-		try:
-			sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
-							  ftp_creds.get('password'), path=ftp_creds.get('path'))
-			sess.start()
-		except (ConnectionErrorException, RemotePathNotExistException) as e:
-			print e
-			sys.exit(0)
-		else:
-			update_changes(sess, diffs, tip_next)
-			sess.stop()
+        try:
+            sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
+                              ftp_creds.get('password'), path=ftp_creds.get('path'))
+            sess.start()
+        except (ConnectionErrorException, RemotePathNotExistException) as e:
+            print e
+            sys.exit(0)
+        else:
+            update_changes(sess, diffs, tip_next)
+            sess.stop()
 
 
 
 def update_changes(sess, diffs, commit):
-	"""
-	Update associated file on the remote server based on the diffs infomation.
-	This will allow us to work only with file that has changed, new or deleted.
-	"""
+    """
+    Update associated file on the remote server based on the diffs infomation.
+    This will allow us to work only with file that has changed, new or deleted.
+    """
 
-	print "\n> [INFO] Processing commit: %s" % commit.message.strip('\n')
+    print "\n> [INFO] Processing commit: %s" % commit.message.strip('\n')
 
-	for diff in diffs.iter_change_type('D'):
-		print '> |__[INFO] Deleting [%s]...' % diff.a_blob.path
-		sess.delete(diff.a_blob.path)
+    for diff in diffs.iter_change_type('D'):
+        print '> |__[INFO] Deleting [%s]...' % diff.a_blob.path
+        sess.delete(diff.a_blob.path)
 
-	for diff in diffs.iter_change_type('A'):
-		print '> |__[INFO] Adding [%s]...' % diff.b_blob.path
-		sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream)
+    for diff in diffs.iter_change_type('A'):
+        print '> |__[INFO] Adding [%s]...' % diff.b_blob.path
+        sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream)
 
-	for diff in diffs.iter_change_type('M'):
-		print '> |___[INFO] Updating [%s]...' % diff.b_blob.path
-		sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream, is_new=False)
+    for diff in diffs.iter_change_type('M'):
+        print '> |___[INFO] Updating [%s]...' % diff.b_blob.path
+        sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream, is_new=False)
 
 
 def runner():
-	"""
-	giFTP runner function.
-	"""
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--init', action='store_true', help='Generate initial Giftp config on current directory.')
-	parser.add_argument('-u', '--update', action='store_true', help='Update changes to remote server.')
-	parser.add_argument('-t', '--test', action='store_true', help='Test connection to remote server.')
-	args = parser.parse_args()
+    """
+    giFTP runner function.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--init', action='store_true', help='Generate initial Giftp config on current directory.')
+    parser.add_argument('-u', '--update', action='store_true', help='Update changes to remote server.')
+    parser.add_argument('-t', '--test', action='store_true', help='Test connection to remote server.')
+    args = parser.parse_args()
 
-	print
-	if args.init:
-		generate_initial_config()
-	elif args.update:
-		run_update()
-	elif args.test:
-		run_update(test=True)
-	print
+    print
+    if args.init:
+        generate_initial_config()
+    elif args.update:
+        run_update()
+    elif args.test:
+        run_update(test=True)
+    print
 
 
 
 if __name__ == '__main__':
-	runner()
+    runner()

@@ -41,4 +41,3 @@ setup(
     zip_safe = False,
     scripts=['bin/gtp'],
 )
-
