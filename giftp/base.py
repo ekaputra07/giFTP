@@ -206,7 +206,7 @@ def update_changes(sess, diffs, commit):
         sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream)
 
     for diff in diffs.iter_change_type('M'):
-        print '> |___[INFO] Updating [%s]...' % diff.b_blob.path
+        print '> |__[INFO] Updating [%s]...' % diff.b_blob.path
         sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream, is_new=False)
 
 
