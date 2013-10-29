@@ -66,17 +66,25 @@ class FTPSession(object):
     """
     A class that handle all FTP operation.
     """
-    def __init__(self, host, username=None, password=None, path=None):
+    def __init__(self, host, username=None, password=None, path=None,
+                 simulate=False):
         """
         Get FTP credentials during initialization.
-        :host - required.
-        :username and :password are optional, and the default connection will be
-        anonymous FTP connection.
+        Args:
+            - host      : required.
+            - username  : optional and the default connection will be
+                          anonymous FTP connection.
+            - password  : optional.
+            - path      : Path on the remote server where all transfered file will
+                          goes to.
+            - simulate  : When simulate is True, all actual FTP action will be
+                          skipped.
         """
         self.host = host
         self.username = username
         self.password = password
         self.path = path
+        self.simulate = simulate
 
         self.session = None
         self.success_operation = []
@@ -111,6 +119,8 @@ class FTPSession(object):
         """
         Handle directory creation if not yet exists on the server.
         """
+        if self.simulate: return
+
         dirs = []
         for segment in segments:
             dirs.append(segment)
@@ -127,8 +137,9 @@ class FTPSession(object):
         """
         Add new file to remote server.
         """
-        segments = path.split('/')
+        if self.simulate: return
 
+        segments = path.split('/')
         operation = 'A'
         if not is_new:
             operation = 'M'
@@ -152,6 +163,8 @@ class FTPSession(object):
         """
         Delete file on the remote server.
         """
+        if self.simulate: return
+        
         operation = 'D'
         try:
             self.session.delete(path)

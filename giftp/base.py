@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import os
-import sysos
+import sys
 import ftplib
 import argparse
 import json
@@ -54,7 +54,7 @@ def generate_initial_config():
         'repo': {
             'path': '/absolute/path/to-your/git-repo',
             'branch': 'master',
-            'head': '',
+            'latest_commit': '',
         },
     }
 
@@ -76,7 +76,7 @@ def generate_initial_config():
         fp.close()
 
 
-def run_update(test=False):
+def run_update(test=False, simulate=False):
     """
     Run update to remote server.
     """
@@ -101,7 +101,7 @@ def run_update(test=False):
     else:
         fp.close()
         if not test:
-            inspect_repo(config.get('repo'), config.get('host'))
+            inspect_repo(config.get('repo'), config.get('host'), simulate)
         else:
             test_connection(config.get('host'))
 
@@ -123,12 +123,12 @@ def test_connection(ftp_creds):
         sys.exit(0)
 
 
-def inspect_repo(repo_config, ftp_creds):
+def inspect_repo(repo_config, ftp_creds, simulate):
     """
     Inspect target Git repository.
     """
     branch = repo_config.get('branch')
-    last_commit = repo_config.get('head')
+    last_commit = repo_config.get('latest_commit')
 
     try:
         repo = Repo(repo_config.get('path'))
@@ -173,14 +173,20 @@ def inspect_repo(repo_config, ftp_creds):
 
         try:
             sess = FTPSession(ftp_creds.get('url'), ftp_creds.get('username'),
-                              ftp_creds.get('password'), path=ftp_creds.get('path'))
+                              ftp_creds.get('password'), path=ftp_creds.get('path'),
+                              simulate=simulate)
             sess.start()
         except (ConnectionErrorException, RemotePathNotExistException) as e:
             print e
-            sys.exit(0)
+            sys.exit(1)
         else:
             update_changes(sess, diffs, tip_next)
             sess.stop()
+
+            if not simulate:
+                # Once updating success (non simulate)
+                # record the current last commit ID.
+                save_latest_commit(tip_next.hexsha)
 
 
 def update_changes(sess, diffs, commit):
@@ -204,6 +210,28 @@ def update_changes(sess, diffs, commit):
         sess.push(diff.b_blob.path, diff.b_blob.data_stream.stream, is_new=False)
 
 
+def save_latest_commit(hexsha):
+    """
+    Get latest commit ID for current branch.
+    """
+    try:
+        fp = open(CONFIG_FILE, 'r')
+        config = json.load(fp)
+    except Exception as e:
+        print '\n> [ERROR] %s.' % e.message
+    else:
+        fp.close()
+
+        config.get('repo')['latest_commit'] = hexsha
+        try:
+            fp = open(CONFIG_FILE, 'w')
+            json.dump(config, fp, indent=4)
+        except:
+            print '\r> [ERROR] Please make sure you have a write permission to this directory.'
+        else:
+            fp.close()
+
+
 def runner():
     """
     giFTP runner function.
@@ -215,6 +243,8 @@ def runner():
                         help='Update changes to remote server.')
     parser.add_argument('-t', '--test', action='store_true',
                         help='Test connection to remote server.')
+    parser.add_argument('-s', '--simulate', action='store_true',
+                        help='Run simulation for the next update process.')
     args = parser.parse_args()
 
     print
@@ -224,6 +254,8 @@ def runner():
         run_update()
     elif args.test:
         run_update(test=True)
+    elif args.simulate:
+        run_update(simulate=True)
     print
 
 
