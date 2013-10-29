@@ -99,4 +99,4 @@ Please test first before use it for production site.
 More thing to do:
 
  * Automate to detect the current GIT head ID, to avoid set it manually when initialize giFTP for the first time.
- * Automatically change commit ID to latest commit ID when finished uploading changes, so in the next update command, all will run smoothly and no more manual config set.
+ * Add a way to store FTP password more securely.
