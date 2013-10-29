@@ -36,6 +36,7 @@ from git.exc import NoSuchPathError, InvalidGitRepositoryError
 
 from ftp_session import (FTPSession, ConnectionErrorException,
                          RemotePathNotExistException)
+from giftp import __VERSION__
 
 CONFIG_FILE = 'gtp.json'
 
@@ -236,7 +237,8 @@ def runner():
     """
     giFTP runner function.
     """
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='giFTP version %s' % __VERSION__,
+                                     epilog='Fork me on GitHub https://github.com/ekaputra07/giFTP')
     parser.add_argument('-i', '--init', action='store_true',
                         help='Generate initial Giftp config on current directory.')
     parser.add_argument('-u', '--update', action='store_true',
