@@ -71,6 +71,12 @@ If it success, now you can make any changes to the repo and make a commit.
 
 **3. Apply changes to remote server :**
 
+Before doing any actual update, we can check what actions that will be run by giFTP, by doing a simulation.
+
+Simulation will show us actual update process on the console, but not doing any actual changes to the server. Start it with:
+
+    $ gtp --simulate
+
 When you are ready to deploy changes, just run this command in the same directory your config file are located:
 
     $ gtp --update

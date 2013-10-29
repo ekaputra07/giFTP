@@ -240,13 +240,13 @@ def runner():
     parser = argparse.ArgumentParser(description='giFTP version %s' % __VERSION__,
                                      epilog='Fork me on GitHub https://github.com/ekaputra07/giFTP')
     parser.add_argument('-i', '--init', action='store_true',
-                        help='Generate initial Giftp config on current directory.')
+                        help='Generate initial giFTP config on current directory.')
     parser.add_argument('-u', '--update', action='store_true',
-                        help='Update changes to remote server.')
+                        help='Update changes to the server.')
     parser.add_argument('-t', '--test', action='store_true',
-                        help='Test connection to remote server.')
+                        help='Test connection to the server.')
     parser.add_argument('-s', '--simulate', action='store_true',
-                        help='Run simulation for the next update process.')
+                        help='Run simulation for the upload process.')
     args = parser.parse_args()
 
     print
