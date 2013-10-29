@@ -36,7 +36,7 @@ Once config created, you can open it and edit to match your Repo and FTP informa
     {
         "repo": {
             "path": "/absolute/path/to-your/git-repo", 
-            "head": "56f17fad9471327aa2f60c6aec4cc8f4d9bf9870, 
+            "latest_commit": "56f17fad9471327aa2f60c6aec4cc8f4d9bf9870, 
             "branch": "master"
         }, 
         "host": {
@@ -51,7 +51,7 @@ The config itself is self explanatory,
 
     Repo:
      - path : is path to your git repository/working area.
-     - head : In which commit id this program will try to track for changes. To get this value use "git log" command on your git repo to get tha latest commit id.
+     - latest_commit : In which commit id this program will try to track for changes. To get this value use "git log" command on your git repo to get the latest commit id.
      - branch : Branch to watch for changes.
      
     Host:
