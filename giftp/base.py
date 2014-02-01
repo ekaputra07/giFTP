@@ -36,7 +36,6 @@ from git.exc import NoSuchPathError, InvalidGitRepositoryError
 
 from ftp_session import (FTPSession, ConnectionErrorException,
                          RemotePathNotExistException)
-from giftp import __VERSION__
 
 CONFIG_FILE = 'gtp.json'
 
@@ -196,7 +195,7 @@ def update_changes(sess, diffs, commit):
     This will allow us to work only with file that has changed, new or deleted.
     """
 
-    print "\n> [INFO] Processing commit: %s" % commit.message.strip('\n')
+    print "\n> Processing commit: %s" % commit.message.strip('\n')
 
     for diff in diffs.iter_change_type('D'):
         print '> |__[INFO] Deleting [%s]...' % diff.a_blob.path
@@ -237,7 +236,7 @@ def runner():
     """
     giFTP runner function.
     """
-    parser = argparse.ArgumentParser(description='giFTP version %s' % __VERSION__,
+    parser = argparse.ArgumentParser(description='giFTP - Git commit to FTP upload made easy.',
                                      epilog='Fork me on GitHub https://github.com/ekaputra07/giFTP')
     parser.add_argument('-i', '--init', action='store_true',
                         help='Generate initial giFTP config on current directory.')
